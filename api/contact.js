@@ -1,23 +1,13 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
-import dotenv from 'dotenv';
 import nodemailer from 'nodemailer';
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
-dotenv.config({ path: path.resolve(__dirname, '../server/.env') });
-dotenv.config();
-
-const SMTP_HOST = process.env.SMTP_HOST;
-const SMTP_PORT = process.env.SMTP_PORT;
-const SMTP_USER = process.env.SMTP_USER;
-// Gmail App Passwords are often copied with spaces; strip them for auth.
-const SMTP_PASS = process.env.SMTP_PASS?.replace(/\s+/g, '');
-const RECIPIENT = process.env.SMTP_RECIPIENT || 'mahnoorshahid2410@gmail.com';
+const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
+const SMTP_PORT = Number(process.env.SMTP_PORT) || 587;
+const SMTP_USER = process.env.SMTP_USER || 'mahnoorshahid2410@gmail.com';
+const SMTP_PASS = (process.env.SMTP_PASS || '').replace(/\s+/g, '');
+const RECIPIENT = process.env.SMTP_RECIPIENT || SMTP_USER || 'mahnoorshahid2410@gmail.com';
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const looksLikeGmailAppPassword = /^[a-zA-Z0-9]{16}$/.test(SMTP_PASS);
 
 function sanitizeHeaderValue(value) {
   return String(value).replace(/[\r\n]+/g, ' ').trim();
@@ -37,18 +27,10 @@ function validateContactPayload(body) {
   const email = typeof body?.email === 'string' ? body.email.trim() : '';
   const message = typeof body?.message === 'string' ? body.message.trim() : '';
 
-  if (!name) {
-    return { error: 'name is required' };
-  }
-  if (!email) {
-    return { error: 'email is required' };
-  }
-  if (!EMAIL_RE.test(email)) {
-    return { error: 'email format is invalid' };
-  }
-  if (!message) {
-    return { error: 'message is required' };
-  }
+  if (!name) return { error: 'name is required' };
+  if (!email) return { error: 'email is required' };
+  if (!EMAIL_RE.test(email)) return { error: 'email format is invalid' };
+  if (!message) return { error: 'message is required' };
 
   return {
     name: sanitizeHeaderValue(name),
@@ -57,57 +39,100 @@ function validateContactPayload(body) {
   };
 }
 
-function createTransporter() {
-  if (!SMTP_HOST || !SMTP_PORT || !SMTP_USER || !SMTP_PASS) {
+async function sendViaSmtp({ name, email, message }) {
+  if (!SMTP_USER || !SMTP_PASS) {
     throw new Error('SMTP configuration is incomplete');
   }
 
-  return nodemailer.createTransport({
+  const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
-    port: Number(SMTP_PORT),
+    port: SMTP_PORT,
     secure: false,
+    requireTLS: true,
     auth: {
       user: SMTP_USER,
       pass: SMTP_PASS,
     },
   });
+
+  const subjectLine = `New Portfolio Contact — ${name}`;
+  const text = `Name:\n${name}\n\nEmail:\n${email}\n\nMessage:\n${message}`;
+  const html = `
+    <div>
+      <p><strong>Name:</strong><br/>${escapeHtml(name)}</p>
+      <p><strong>Email:</strong><br/>${escapeHtml(email)}</p>
+      <p><strong>Message:</strong><br/>${escapeHtml(message).replace(/\n/g, '<br/>')}</p>
+    </div>
+  `;
+
+  await transporter.sendMail({
+    from: `"Portfolio Contact" <${SMTP_USER}>`,
+    replyTo: email,
+    to: RECIPIENT,
+    subject: subjectLine,
+    text,
+    html,
+  });
+}
+
+async function sendViaFormSubmit({ name, email, message }) {
+  const response = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(RECIPIENT)}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+    },
+    body: JSON.stringify({
+      name,
+      email,
+      message,
+      _replyto: email,
+      _subject: `New Portfolio Contact — ${name}`,
+    }),
+  });
+
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) {
+    throw new Error(data.message || data.error || 'FormSubmit request failed');
+  }
+}
+
+async function deliverContactMessage(payload) {
+  if (looksLikeGmailAppPassword) {
+    try {
+      await sendViaSmtp(payload);
+      return { channel: 'smtp' };
+    } catch (error) {
+      console.error('SMTP send failed, trying FormSubmit fallback:', error instanceof Error ? error.message : 'unknown');
+    }
+  }
+
+  await sendViaFormSubmit(payload);
+  return { channel: 'formsubmit' };
 }
 
 export default async function handler(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    return res.status(204).end();
+  }
+
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
+    res.setHeader('Allow', 'POST, OPTIONS');
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   try {
     const validated = validateContactPayload(req.body || {});
-
     if (validated.error) {
       return res.status(400).json({ error: validated.error });
     }
 
-    const { name, email, message } = validated;
-    const transporter = createTransporter();
-    const subjectLine = `New Portfolio Contact — ${name}`;
-    const text = `Name:\n${name}\n\nEmail:\n${email}\n\nMessage:\n${message}`;
-    const html = `
-      <div>
-        <p><strong>Name:</strong><br/>${escapeHtml(name)}</p>
-        <p><strong>Email:</strong><br/>${escapeHtml(email)}</p>
-        <p><strong>Message:</strong><br/>${escapeHtml(message).replace(/\n/g, '<br/>')}</p>
-      </div>
-    `;
-
-    await transporter.sendMail({
-      from: `"Portfolio Contact" <${SMTP_USER}>`,
-      replyTo: email,
-      to: RECIPIENT,
-      subject: subjectLine,
-      text,
-      html,
-    });
-
-    return res.status(200).json({ status: 'ok' });
+    const result = await deliverContactMessage(validated);
+    return res.status(200).json({ status: 'ok', channel: result.channel });
   } catch (error) {
     console.error('Contact submit failed:', error instanceof Error ? error.message : 'unknown error');
     return res.status(500).json({ error: 'Unable to send email' });

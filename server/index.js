@@ -14,16 +14,13 @@ dotenv.config({ path: path.resolve(__dirname, '.env') });
 const SMTP_HOST = process.env.SMTP_HOST || 'smtp.gmail.com';
 const SMTP_PORT = Number(process.env.SMTP_PORT) || 587;
 const SMTP_USER = process.env.SMTP_USER || 'mahnoorshahid2410@gmail.com';
-// Gmail App Passwords are often copied with spaces; strip them for auth.
 const SMTP_PASS = (process.env.SMTP_PASS || '').replace(/\s+/g, '');
 const RECIPIENT = process.env.SMTP_RECIPIENT || SMTP_USER || 'mahnoorshahid2410@gmail.com';
-// Port 4000 is commonly taken by NoMachine (nxd) on Linux desktops.
 const PORT = Number(process.env.PORT) || 5000;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const looksLikeGmailAppPassword = /^[a-zA-Z0-9]{16}$/.test(SMTP_PASS);
 
-/** Strip CR/LF to prevent email header injection. */
 function sanitizeHeaderValue(value) {
   return String(value).replace(/[\r\n]+/g, ' ').trim();
 }
@@ -42,18 +39,10 @@ function validateContactPayload(body) {
   const email = typeof body?.email === 'string' ? body.email.trim() : '';
   const message = typeof body?.message === 'string' ? body.message.trim() : '';
 
-  if (!name) {
-    return { error: 'name is required' };
-  }
-  if (!email) {
-    return { error: 'email is required' };
-  }
-  if (!EMAIL_RE.test(email)) {
-    return { error: 'email format is invalid' };
-  }
-  if (!message) {
-    return { error: 'message is required' };
-  }
+  if (!name) return { error: 'name is required' };
+  if (!email) return { error: 'email is required' };
+  if (!EMAIL_RE.test(email)) return { error: 'email format is invalid' };
+  if (!message) return { error: 'message is required' };
 
   return {
     name: sanitizeHeaderValue(name),
@@ -62,45 +51,31 @@ function validateContactPayload(body) {
   };
 }
 
-function createSmtpTransporter() {
-  return nodemailer.createTransport({
+async function sendViaSmtp({ name, email, message }) {
+  const transporter = nodemailer.createTransport({
     host: SMTP_HOST,
     port: SMTP_PORT,
     secure: false,
     requireTLS: true,
-    auth: {
-      user: SMTP_USER,
-      pass: SMTP_PASS,
-    },
+    auth: { user: SMTP_USER, pass: SMTP_PASS },
   });
-}
-
-async function sendViaSmtp({ name, email, message }) {
-  const transporter = createSmtpTransporter();
-  const subjectLine = `New Portfolio Contact — ${name}`;
-  const text = `Name:\n${name}\n\nEmail:\n${email}\n\nMessage:\n${message}`;
-  const html = `
-    <div>
-      <p><strong>Name:</strong><br/>${escapeHtml(name)}</p>
-      <p><strong>Email:</strong><br/>${escapeHtml(email)}</p>
-      <p><strong>Message:</strong><br/>${escapeHtml(message).replace(/\n/g, '<br/>')}</p>
-    </div>
-  `;
 
   await transporter.sendMail({
     from: `"Portfolio Contact" <${SMTP_USER}>`,
     replyTo: email,
     to: RECIPIENT,
-    subject: subjectLine,
-    text,
-    html,
+    subject: `New Portfolio Contact — ${name}`,
+    text: `Name:\n${name}\n\nEmail:\n${email}\n\nMessage:\n${message}`,
+    html: `
+      <div>
+        <p><strong>Name:</strong><br/>${escapeHtml(name)}</p>
+        <p><strong>Email:</strong><br/>${escapeHtml(email)}</p>
+        <p><strong>Message:</strong><br/>${escapeHtml(message).replace(/\n/g, '<br/>')}</p>
+      </div>
+    `,
   });
 }
 
-/**
- * Fallback when Gmail SMTP_PASS is missing/invalid.
- * Uses FormSubmit AJAX (activation email is sent once to RECIPIENT).
- */
 async function sendViaFormSubmit({ name, email, message }) {
   const response = await fetch(`https://formsubmit.co/ajax/${encodeURIComponent(RECIPIENT)}`, {
     method: 'POST',
@@ -121,7 +96,6 @@ async function sendViaFormSubmit({ name, email, message }) {
   if (!response.ok) {
     throw new Error(data.message || data.error || 'FormSubmit request failed');
   }
-  return data;
 }
 
 async function deliverContactMessage(payload) {
@@ -133,9 +107,7 @@ async function deliverContactMessage(payload) {
       console.error('SMTP send failed, trying FormSubmit fallback:', error instanceof Error ? error.message : 'unknown');
     }
   } else {
-    console.warn(
-      'SMTP_PASS is not a valid 16-character Gmail App Password. Using FormSubmit fallback. Update .env SMTP_PASS to enable Gmail SMTP.',
-    );
+    console.warn('SMTP_PASS is not a valid 16-char Gmail App Password. Using FormSubmit fallback.');
   }
 
   await sendViaFormSubmit(payload);
@@ -148,7 +120,6 @@ app.use(express.json());
 
 app.post('/api/contact', async (req, res) => {
   const validated = validateContactPayload(req.body);
-
   if (validated.error) {
     return res.status(400).json({ error: validated.error });
   }
@@ -163,11 +134,7 @@ app.post('/api/contact', async (req, res) => {
 });
 
 app.get('/health', (_req, res) => {
-  res.json({
-    status: 'ok',
-    smtpConfigured: looksLikeGmailAppPassword,
-    port: PORT,
-  });
+  res.json({ status: 'ok', smtpConfigured: looksLikeGmailAppPassword, port: PORT });
 });
 
 app.listen(PORT, () => {
