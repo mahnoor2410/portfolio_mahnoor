@@ -23,27 +23,29 @@ export function Projects({ onOpenCaseStudy }: Props) {
   const gridVisible = visible.filter((p) => !p.featured);
 
   return (
-    <section id="projects" className="relative py-20 sm:py-28">
+    <section id="projects" className="relative scroll-mt-24 py-16 sm:py-20 lg:py-28">
       <div className="container-px">
         <div className="mx-auto max-w-2xl text-center">
           <span className="reveal eyebrow justify-center">
             <span className="h-px w-6 bg-brand-500" /> Featured Projects
           </span>
-          <h2 className="reveal section-title mt-3">Computer Vision systems and intelligent applications</h2>
-          <p className="reveal mt-4 text-ink-600 dark:text-ink-300">
+          <h2 className="reveal section-title mt-3 text-balance">
+            Computer Vision systems and intelligent applications
+          </h2>
+          <p className="reveal mt-4 text-sm text-ink-600 dark:text-ink-300 sm:text-base">
             Six projects spanning industrial vision pipelines, machine learning and generative AI — with Computer
             Vision work featured first.
           </p>
         </div>
 
-        <div className="reveal mt-10 flex flex-wrap items-center justify-center gap-2">
+        <div className="reveal -mx-1 mt-8 flex gap-2 overflow-x-auto px-1 pb-2 sm:mt-10 sm:flex-wrap sm:items-center sm:justify-center sm:overflow-visible sm:pb-0">
           {FILTERS.map((f) => (
             <button
               key={f}
               type="button"
               onClick={() => setFilter(f)}
               aria-pressed={filter === f}
-              className={`rounded-full px-4 py-2 text-sm font-medium transition-all duration-200 ${
+              className={`shrink-0 rounded-full px-3.5 py-2 text-xs font-medium transition-all duration-200 sm:px-4 sm:text-sm ${
                 filter === f
                   ? 'bg-gradient-to-r from-brand-600 to-brand-500 text-white shadow-glow'
                   : 'glass text-ink-600 hover:text-brand-600 dark:text-ink-300 dark:hover:text-brand-400'
@@ -55,7 +57,7 @@ export function Projects({ onOpenCaseStudy }: Props) {
         </div>
 
         {featuredVisible.length > 0 && (
-          <div className="mt-10 space-y-6">
+          <div className="mt-8 space-y-5 sm:mt-10 sm:space-y-6">
             <div className="reveal flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">
               <Star className="h-3.5 w-3.5 fill-current" /> Featured Computer Vision Work
             </div>
@@ -66,7 +68,7 @@ export function Projects({ onOpenCaseStudy }: Props) {
         )}
 
         {gridVisible.length > 0 && (
-          <div className={`grid gap-5 sm:grid-cols-2 lg:grid-cols-3 ${featuredVisible.length > 0 ? 'mt-10' : 'mt-10'}`}>
+          <div className="mt-8 grid grid-cols-1 gap-5 sm:mt-10 sm:grid-cols-2 lg:grid-cols-3">
             {gridVisible.map((p) => (
               <ProjectCard key={p.id} project={p} onCaseStudy={() => onOpenCaseStudy(p.id)} />
             ))}
@@ -86,29 +88,32 @@ export function Projects({ onOpenCaseStudy }: Props) {
 function FeaturedCard({ project, onCaseStudy }: { project: Project; onCaseStudy: () => void }) {
   return (
     <article className="group reveal relative overflow-hidden glass-card">
-      <div className="grid lg:grid-cols-5">
-        <div className="relative col-span-2 min-h-[220px] overflow-hidden bg-ink-950 lg:min-h-[340px]">
+      {/* IMPORTANT: col-span only from lg up — on mobile this must be a single stacked column */}
+      <div className="grid grid-cols-1 lg:grid-cols-5">
+        <div className="relative w-full overflow-hidden bg-ink-950 lg:col-span-2 lg:min-h-[340px]">
           <ProjectVideo
             src={project.video}
             poster={project.poster || project.image}
             title={project.title}
-            className="h-full min-h-[220px] lg:min-h-[340px] aspect-auto"
+            className="aspect-video w-full lg:absolute lg:inset-0 lg:aspect-auto lg:h-full lg:min-h-[340px]"
           />
-          <span className="pointer-events-none absolute left-4 top-4 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-3 py-1 text-xs font-semibold text-white backdrop-blur">
+          <span className="pointer-events-none absolute left-3 top-3 z-10 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-semibold text-white backdrop-blur sm:left-4 sm:top-4 sm:px-3 sm:text-xs">
             <Star className="h-3.5 w-3.5 fill-current" /> {project.number} · Featured
           </span>
         </div>
 
-        <div className="col-span-3 p-7 sm:p-8">
-          <div className="text-xs font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+        <div className="min-w-0 p-5 sm:p-7 lg:col-span-3 lg:p-8">
+          <div className="text-[11px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400 sm:text-xs break-words">
             {project.category}
           </div>
-          <h3 className="mt-2 font-display text-2xl font-bold sm:text-3xl">{project.title}</h3>
-          <p className="mt-1 text-sm font-medium text-ink-500 dark:text-ink-400">{project.tagline}</p>
-          <p className="mt-4 text-sm leading-relaxed text-ink-600 dark:text-ink-300">{project.description}</p>
+          <h3 className="mt-2 font-display text-xl font-bold leading-snug sm:text-2xl lg:text-3xl break-words">
+            {project.title}
+          </h3>
+          <p className="mt-1 text-sm font-medium text-ink-500 dark:text-ink-400 break-words">{project.tagline}</p>
+          <p className="mt-3 text-sm leading-relaxed text-ink-600 dark:text-ink-300 sm:mt-4">{project.description}</p>
 
           {project.pipeline && (
-            <div className="mt-4 overflow-x-auto">
+            <div className="mt-4 -mx-1 overflow-x-auto px-1">
               <div className="flex min-w-max items-center gap-1.5 text-[11px] text-ink-500 dark:text-ink-400">
                 {project.pipeline.map((step, i) => (
                   <span key={step} className="inline-flex items-center gap-1.5">
@@ -122,7 +127,7 @@ function FeaturedCard({ project, onCaseStudy }: { project: Project; onCaseStudy:
             </div>
           )}
 
-          <div className="mt-5 flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2 sm:mt-5">
             {project.technologies.map((t) => (
               <span key={t} className="chip">
                 {t}
@@ -130,8 +135,8 @@ function FeaturedCard({ project, onCaseStudy }: { project: Project; onCaseStudy:
             ))}
           </div>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button type="button" onClick={onCaseStudy} className="btn-primary">
+          <div className="mt-5 flex flex-wrap gap-3 sm:mt-6">
+            <button type="button" onClick={onCaseStudy} className="btn-primary w-full sm:w-auto">
               <FileText className="h-4 w-4" /> View Case Study
             </button>
           </div>
@@ -143,8 +148,8 @@ function FeaturedCard({ project, onCaseStudy }: { project: Project; onCaseStudy:
 
 function ProjectCard({ project, onCaseStudy }: { project: Project; onCaseStudy: () => void }) {
   return (
-    <article className="group reveal flex h-full flex-col overflow-hidden glass-card transition-all duration-300 hover:-translate-y-1 hover:shadow-glow">
-      <div className="relative h-40 overflow-hidden bg-gradient-to-br from-ink-800 to-ink-950">
+    <article className="group reveal flex h-full min-w-0 flex-col overflow-hidden glass-card transition-all duration-300 hover:-translate-y-1 hover:shadow-glow">
+      <div className="relative h-40 overflow-hidden bg-gradient-to-br from-ink-800 to-ink-950 sm:h-44">
         {project.image ? (
           <img
             src={project.image}
@@ -160,16 +165,16 @@ function ProjectCard({ project, onCaseStudy }: { project: Project; onCaseStudy: 
           </>
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-ink-950/70 via-ink-950/10 to-transparent" />
-        <span className="absolute left-4 top-4 inline-flex items-center rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">
+        <span className="absolute left-3 top-3 inline-flex max-w-[85%] items-center truncate rounded-full bg-white/10 px-2.5 py-1 text-[11px] font-medium text-white backdrop-blur">
           {project.number} · {project.filterCategory}
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
-        <div className="text-[11px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+      <div className="flex min-w-0 flex-1 flex-col p-4 sm:p-5">
+        <div className="text-[11px] font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400 break-words">
           {project.category}
         </div>
-        <h3 className="mt-1 font-display text-lg font-semibold">{project.title}</h3>
+        <h3 className="mt-1 font-display text-base font-semibold leading-snug sm:text-lg break-words">{project.title}</h3>
         <p className="mt-1 text-sm font-medium text-ink-500 dark:text-ink-400">{project.tagline}</p>
         <p className="mt-3 line-clamp-3 text-sm leading-relaxed text-ink-600 dark:text-ink-300">{project.description}</p>
 
@@ -182,7 +187,7 @@ function ProjectCard({ project, onCaseStudy }: { project: Project; onCaseStudy: 
         </div>
 
         <div className="mt-5 flex flex-1 items-end pt-2">
-          <button type="button" onClick={onCaseStudy} className="btn-outline px-4 py-2 text-xs">
+          <button type="button" onClick={onCaseStudy} className="btn-outline w-full px-4 py-2 text-xs sm:w-auto">
             <FileText className="h-3.5 w-3.5" /> View Case Study
           </button>
         </div>

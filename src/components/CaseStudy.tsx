@@ -34,10 +34,10 @@ export function CaseStudy({ projectId, onBack, onOpenProject }: Props) {
           <ArrowLeft className="h-4 w-4" /> All Projects
         </button>
 
-        <div className="text-xs font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400">
+        <div className="text-xs font-semibold uppercase tracking-wider text-brand-600 dark:text-brand-400 break-words">
           {project.number} · {project.category}
         </div>
-        <h1 className="mt-3 font-display text-3xl font-bold sm:text-4xl lg:text-5xl">{project.title}</h1>
+        <h1 className="mt-3 font-display text-2xl font-bold leading-snug sm:text-4xl lg:text-5xl break-words">{project.title}</h1>
         <p className="mt-4 max-w-3xl text-base leading-relaxed text-ink-600 dark:text-ink-300 sm:text-lg">
           {project.longDescription}
         </p>
@@ -136,8 +136,8 @@ export function CaseStudy({ projectId, onBack, onOpenProject }: Props) {
           </Section>
         )}
 
-        <section className="mt-14 overflow-hidden glass-card p-8 text-center sm:p-10">
-          <h2 className="font-display text-2xl font-bold">Let's Talk</h2>
+        <section className="mt-14 overflow-hidden glass-card p-5 text-center sm:p-10">
+          <h2 className="font-display text-xl font-bold sm:text-2xl">Let's Talk</h2>
           <p className="mx-auto mt-3 max-w-xl text-sm text-ink-600 dark:text-ink-300">
             Need a Computer Vision pipeline, OCR workflow or intelligent AI application? Tell me about your use case.
           </p>

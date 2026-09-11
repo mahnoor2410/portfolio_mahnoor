@@ -55,36 +55,36 @@ export function Contact() {
   };
 
   return (
-    <section id="contact" className="relative py-20 sm:py-28">
+    <section id="contact" className="relative scroll-mt-24 py-16 sm:py-20 lg:py-28">
       <div className="absolute inset-0 -z-10 bg-aurora opacity-70" />
       <div className="container-px">
         <div className="mx-auto max-w-2xl text-center">
           <span className="reveal eyebrow justify-center">
             <span className="h-px w-6 bg-brand-500" /> Contact
           </span>
-          <h2 className="reveal section-title mt-3">Let's build your AI solution</h2>
-          <p className="reveal mt-4 text-ink-600 dark:text-ink-300">
+          <h2 className="reveal section-title mt-3 text-balance">Let's build your AI solution</h2>
+          <p className="reveal mt-4 text-sm text-ink-600 dark:text-ink-300 sm:text-base">
             Have a project in mind? Tell me about it and I'll get back to you within 24 hours.
           </p>
         </div>
 
-        <div className="mx-auto mt-14 grid max-w-5xl gap-6 lg:grid-cols-5">
-          <div className="reveal lg:col-span-2">
-            <div className="glass-card h-full p-6 sm:p-7">
+        <div className="mx-auto mt-10 grid max-w-5xl gap-5 sm:mt-14 sm:gap-6 lg:grid-cols-5">
+          <div className="reveal min-w-0 lg:col-span-2">
+            <div className="glass-card h-full p-5 sm:p-7">
               <h3 className="font-display text-lg font-semibold">Get in touch</h3>
               <p className="mt-2 text-sm text-ink-600 dark:text-ink-300">
                 Available for freelance AI projects, full-time roles and collaborations.
               </p>
-              <ul className="mt-6 space-y-3">
+              <ul className="mt-6 space-y-2 sm:space-y-3">
                 {CONTACTS.map((c) => {
                   const inner = (
-                    <div className="flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-brand-500/10">
-                      <span className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-brand-500/15 to-accent-500/15 text-brand-600 dark:text-brand-400">
+                    <div className="flex items-center gap-3 rounded-xl p-2.5 transition-colors hover:bg-brand-500/10 sm:p-3">
+                      <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-gradient-to-br from-brand-500/15 to-accent-500/15 text-brand-600 dark:text-brand-400">
                         <c.icon className="h-5 w-5" />
                       </span>
-                      <div className="min-w-0">
+                      <div className="min-w-0 flex-1">
                         <div className="text-xs uppercase tracking-wide text-ink-500 dark:text-ink-400">{c.label}</div>
-                        <div className="truncate text-sm font-medium text-ink-800 dark:text-ink-100">{c.value}</div>
+                        <div className="break-all text-sm font-medium text-ink-800 dark:text-ink-100">{c.value}</div>
                       </div>
                     </div>
                   );
@@ -104,8 +104,8 @@ export function Contact() {
             </div>
           </div>
 
-          <div className="reveal lg:col-span-3">
-            <form onSubmit={onSubmit} className="glass-card space-y-4 p-6 sm:p-7">
+          <div className="reveal min-w-0 lg:col-span-3">
+            <form onSubmit={onSubmit} className="glass-card space-y-4 p-5 sm:p-7">
               <div className="grid gap-4 sm:grid-cols-2">
                 <Field label="Name" required>
                   <input
@@ -155,15 +155,15 @@ export function Contact() {
               </button>
 
               {status === 'success' && (
-                <div className="flex items-center gap-2 rounded-xl bg-accent-500/10 p-3 text-sm text-accent-700 dark:text-accent-300">
-                  <CheckCircle2 className="h-5 w-5 shrink-0" />
-                  {SUCCESS_MSG}
+                <div className="flex items-start gap-2 rounded-xl bg-accent-500/10 p-3 text-sm text-accent-700 dark:text-accent-300">
+                  <CheckCircle2 className="mt-0.5 h-5 w-5 shrink-0" />
+                  <span>{SUCCESS_MSG}</span>
                 </div>
               )}
               {status === 'error' && (
-                <div className="flex items-center gap-2 rounded-xl bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-300">
-                  <AlertCircle className="h-5 w-5 shrink-0" />
-                  {ERROR_MSG}
+                <div className="flex items-start gap-2 rounded-xl bg-red-500/10 p-3 text-sm text-red-700 dark:text-red-300">
+                  <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+                  <span>{ERROR_MSG}</span>
                 </div>
               )}
             </form>

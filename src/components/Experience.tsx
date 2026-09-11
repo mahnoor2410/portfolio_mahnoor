@@ -3,7 +3,7 @@ import { Briefcase, Calendar } from 'lucide-react';
 
 export function Experience() {
   return (
-    <section id="experience" className="relative py-20 sm:py-28">
+    <section id="experience" className="relative scroll-mt-24 py-16 sm:py-20 lg:py-28">
       <div className="absolute inset-0 -z-10 bg-aurora opacity-50" />
       <div className="container-px">
         <div className="mx-auto max-w-2xl text-center">

@@ -14,7 +14,7 @@ const ICONS: Record<string, LucideIcon> = {
 
 export function Skills() {
   return (
-    <section id="skills" className="relative py-20 sm:py-28">
+    <section id="skills" className="relative scroll-mt-24 py-16 sm:py-20 lg:py-28">
       <div className="container-px">
         <div className="mx-auto max-w-2xl text-center">
           <span className="reveal eyebrow justify-center">

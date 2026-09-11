@@ -12,11 +12,12 @@
 
   html {
     scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem;
     -webkit-text-size-adjust: 100%;
   }
 
   body {
-    @apply bg-ink-50 text-ink-900 antialiased font-sans;
+    @apply bg-ink-50 text-ink-900 antialiased font-sans overflow-x-hidden;
     @apply dark:bg-ink-950 dark:text-ink-100;
   }
 
@@ -46,7 +47,7 @@
 
 @layer components {
   .container-px {
-    @apply mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10;
+    @apply mx-auto w-full max-w-7xl px-4 sm:px-8 lg:px-10;
   }
 
   .glass {
@@ -59,7 +60,7 @@
   }
 
   .section-title {
-    @apply text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight;
+    @apply text-2xl sm:text-4xl lg:text-5xl font-bold tracking-tight;
   }
 
   .eyebrow {
